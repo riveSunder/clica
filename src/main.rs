@@ -34,32 +34,36 @@ fn rule_to_array(rule: u8) -> [bool; 8]{
     return rule_array
 }
 
-fn update_world(world: [u8; 11], rule_array: [bool; 8]) -> [u8; 11] {
+fn update_world(world: Vec<u8>, rule_array: [bool; 8]) -> Vec<u8> {
 
-    let w: [u8; 11] = world;
     let r: [bool; 8] = rule_array;
 
-    let mut new_world: [u8; 11] = [0,0,0,0,0,0,0,0,0,0,0];
+    let vector_length = world.len();
+    let mut new_world: Vec<u8> = vec![0; vector_length];
+    //let w: vec![0, vector_length.into()] = world;
+    let w = world;
+
     let mut l_idx: usize = 0;
     let mut r_idx: usize = 0;
 
-    let indices: [usize; 11] = [0,1,2,3,4,5,6,7,8,9,10];
-    for idx in indices {
+    for my_idx in 0..vector_length {
 
+        let idx: usize = my_idx.into();
 
         // identify the edges
         if idx == 0 {
-            l_idx = 10;
+            l_idx = vector_length - 1;
         }
         else {
             l_idx = idx - 1;
         }
-        if idx == 10 {
+        if idx == vector_length-1 {
             r_idx = 0;
         }
         else {
             r_idx = idx + 1;
         }
+        
         
         if (w[l_idx] != 0) 
                 && (w[idx] != 0)
@@ -110,19 +114,25 @@ fn update_world(world: [u8; 11], rule_array: [bool; 8]) -> [u8; 11] {
             new_world[idx] = 1;
         }
 
-
     }
         
     return new_world
 }
 
-fn display_world(world: [u8; 11]) {
+fn display_world(world: Vec<u8>) {
     
     println!("");
+    let vector_length = world.len();
 
-    for idx in 0..11 {
+    for idx in 0..vector_length {
 
-        print!("{}", world[idx]);
+        if world[idx] != 0 {
+            print!("@")
+        }
+        else { 
+            print!(" ")
+        }
+        //print!("{}", world[idx]);
     }
 
 }
@@ -147,21 +157,32 @@ fn display_rule_array(rule_array: [bool; 8]) {
 fn main() {
     let mut rule = String::new();
     let mut steps = String::new(); 
+    let mut world_size = String::new();
 
-
-    //let world_size: usize = 11;
     //let halfway_idx = world_size / 2;
     //let zero_vec = vec![0; len];
     //let mut world: Vec<u8> = vec![0; world_size];
     //world[halfway_idx] = 1;
-    let mut world: [u8; 11] = [0,0,0,0,0,1,0,0,0,0,0];
+    //let mut world:  [u8; 11] = [0,0,0,0,0,1,0,0,0,0,0];
+
+    println!("How big do you want the 1D CA world to be?");
+
+    io::stdin()
+        .read_line(&mut world_size)
+        .expect("Failed!!!");
+
+    let world_size: u8 = world_size.trim().parse().unwrap();
+    let halfway_idx: usize = (world_size / 2).into();
+    println!("CA world will be {world_size} elements, {halfway_idx}");
+
+    let mut world: Vec<u8> = vec![0; world_size.into()];
+    world[halfway_idx] = 1;
 
     println!("Enter the elementary CA rule. e.g. 110 corresponds to 0b0011_1110");
 
     io::stdin()
         .read_line(&mut rule)
         .expect("Failed!!!");
-
 
     println!("You entered: {}", rule.trim());
 
@@ -178,14 +199,15 @@ fn main() {
         .expect("Failed!!!");
 
     let steps: usize = steps.trim().parse().unwrap();
+
     
     for my_step in 0..steps {
 
-        display_world(world);
-        world = update_world(world, rule_array);
-
+        display_world(world.clone());
+        world = update_world(world.clone(), rule_array);
     }
-    display_world(world);
+    display_world(world.clone());
     println!("");
+
 
 }
