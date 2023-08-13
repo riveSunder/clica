@@ -1,5 +1,7 @@
 use std::io;
 use std::env;
+use std::fs::File;
+use std::io::{Write, BufReader, Error};
 
 
 fn rule_to_array(rule: u8) -> [bool; 8]{
@@ -255,16 +257,29 @@ fn main() {
     display_rule_array(rule_array);
     println!("   In binary: {:08.b}", rule);
 
-
+    let mut my_output: String = "".to_string();
     
     for my_step in 0..steps {
 
         let my_line = display_world(world.clone());
         print!("{}", my_line);
         world = update_world(world.clone(), rule_array);
+        if output_file_set {
+            my_output = format!("{}{}", my_output, my_line);
+        }
     }
+
     display_world(world.clone());
     println!("");
 
+    if output_file_set {
+        // save output
+        println!("writing output to {}", output_file);
+
+        let mut output = File::create(output_file);
+        //write!(output, "{}", my_output);
+        print!("{}", my_output)
+
+    }
 
 }
