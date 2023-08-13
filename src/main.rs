@@ -1,4 +1,6 @@
 use std::io;
+use std::env;
+
 
 fn rule_to_array(rule: u8) -> [bool; 8]{
     // converts a decimal rule to a tuple of booleans
@@ -119,22 +121,25 @@ fn update_world(world: Vec<u8>, rule_array: [bool; 8]) -> Vec<u8> {
     return new_world
 }
 
-fn display_world(world: Vec<u8>) {
+fn display_world(world: Vec<u8>) -> String {
     
-    println!("");
+    let mut my_string_world: String = "".to_string();
+
     let vector_length = world.len();
 
     for idx in 0..vector_length {
 
         if world[idx] != 0 {
-            print!("@")
+            my_string_world = my_string_world + "@"
         }
         else { 
-            print!(" ")
+            my_string_world = my_string_world + " "
         }
         //print!("{}", world[idx]);
     }
+    my_string_world = my_string_world + "\n";
 
+    return my_string_world
 }
 
 fn display_rule_array(rule_array: [bool; 8]) {
@@ -155,55 +160,107 @@ fn display_rule_array(rule_array: [bool; 8]) {
 
 
 fn main() {
-    let mut rule = String::new();
-    let mut steps = String::new(); 
-    let mut world_size = String::new();
+    let args: Vec<String> = env::args().collect();
+    let number_args: usize = args.len();
 
-    //let halfway_idx = world_size / 2;
-    //let zero_vec = vec![0; len];
-    //let mut world: Vec<u8> = vec![0; world_size];
-    //world[halfway_idx] = 1;
-    //let mut world:  [u8; 11] = [0,0,0,0,0,1,0,0,0,0,0];
+    
+    let mut rule: u8 = 1;
+    let mut steps: usize = 1; 
+    let mut world_size: usize = 1;
+    let mut output_file: String = "".to_string();
 
-    println!("How big do you want the 1D CA world to be?");
+    let mut rule_set: bool = false;
+    let mut steps_set: bool = false; 
+    let mut world_size_set: bool = false;
+    let mut output_file_set: bool = false;
 
-    io::stdin()
-        .read_line(&mut world_size)
-        .expect("Failed!!!");
+    for ii in 1..number_args {
+        let element = &args[ii];
 
-    let world_size: u8 = world_size.trim().parse().unwrap();
-    let halfway_idx: usize = (world_size / 2).into();
-    println!("CA world will be {world_size} elements, {halfway_idx}");
+        if ii < (number_args+1) { 
+            if element == "-d" {
+                let next_element = &args[ii+1];
+                world_size =  next_element.trim().parse().unwrap();
+                world_size_set = true;
+                println!("{next_element} {world_size}");
+            }
+            if element == "-s" {
+                let next_element = &args[ii+1];
+                steps =  next_element.trim().parse().unwrap();
+                steps_set = true;
+                println!("{next_element} {steps}");
+            }
+            if element == "-r" {
+                let next_element = &args[ii+1];
+                rule =  next_element.trim().parse().unwrap();
+                rule_set = true;
+                println!("{next_element} {rule}");
+            }
+            if element == "-o" {
+                let next_element = &args[ii+1];
+                output_file =  next_element.trim().parse().unwrap();
+                output_file_set = true;
+                println!("{next_element} {output_file}");
+            }
 
-    let mut world: Vec<u8> = vec![0; world_size.into()];
-    world[halfway_idx] = 1;
+        }
 
-    println!("Enter the elementary CA rule. e.g. 110 corresponds to 0b0011_1110");
+    }
 
-    io::stdin()
-        .read_line(&mut rule)
-        .expect("Failed!!!");
+    if !(rule_set) {
+        // if not supplied as cli args, ask the user for rule number
 
-    println!("You entered: {}", rule.trim());
+        let mut user_rule = String::new();
 
-    let rule: u8 = rule.trim().parse().unwrap();
+        println!("Enter the elementary CA rule. e.g. 110 corresponds to 0b0011_1110");
+
+        io::stdin()
+            .read_line(&mut user_rule)
+            .expect("Failed!!!");
+
+        println!("You entered: {}", user_rule.trim());
+
+        rule = user_rule.trim().parse().unwrap();
+    }
+
+    if !(world_size_set) {
+
+
+        let mut user_world_size = String::new();
+        println!("How big do you want the 1D CA world to be?");
+        io::stdin()
+            .read_line(&mut user_world_size)
+            .expect("Failed!!!");
+        world_size = user_world_size.trim().parse().unwrap();
+        println!("CA world will be {world_size} elements");
+    }
+
+    if !(steps_set) {
+        let mut user_steps = String::new(); 
+        println!("Enter the number of steps to compute: ");
+
+        io::stdin()
+            .read_line(&mut user_steps)
+            .expect("Failed!!!");
+
+        steps = user_steps.trim().parse().unwrap();
+
+    }
+
     let rule_array = rule_to_array(rule);
+    let mut world: Vec<u8> = vec![0; world_size.into()];
+    let halfway_idx: usize = (world_size / 2).into();
+    world[halfway_idx] = 1;
 
     display_rule_array(rule_array);
     println!("   In binary: {:08.b}", rule);
 
-    println!("Enter the number of steps to compute: ");
-
-    io::stdin()
-        .read_line(&mut steps)
-        .expect("Failed!!!");
-
-    let steps: usize = steps.trim().parse().unwrap();
 
     
     for my_step in 0..steps {
 
-        display_world(world.clone());
+        let my_line = display_world(world.clone());
+        print!("{}", my_line);
         world = update_world(world.clone(), rule_array);
     }
     display_world(world.clone());
