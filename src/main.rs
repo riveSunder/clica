@@ -1,7 +1,7 @@
 use std::io;
 use std::env;
 use std::fs::File;
-use std::io::{Write, BufReader, Error};
+use std::io::Write;
 
 
 fn rule_to_array(rule: u8) -> [bool; 8]{
@@ -161,7 +161,7 @@ fn display_rule_array(rule_array: [bool; 8]) {
 }
 
 
-fn main() {
+fn main() -> std::io::Result<()> {
     let args: Vec<String> = env::args().collect();
     let number_args: usize = args.len();
 
@@ -262,11 +262,13 @@ fn main() {
     for my_step in 0..steps {
 
         let my_line = display_world(world.clone());
-        print!("{}", my_line);
-        world = update_world(world.clone(), rule_array);
         if output_file_set {
             my_output = format!("{}{}", my_output, my_line);
         }
+        else {
+            print!("{}", my_line);
+        }
+        world = update_world(world.clone(), rule_array);
     }
 
     display_world(world.clone());
@@ -276,10 +278,10 @@ fn main() {
         // save output
         println!("writing output to {}", output_file);
 
-        let mut output = File::create(output_file);
-        //write!(output, "{}", my_output);
-        print!("{}", my_output)
+        let mut output = File::create(output_file)?;
+        output.write_all(my_output.as_bytes())?;
 
     }
 
+    Ok(())
 }
