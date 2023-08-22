@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "naive_eca"
+name = "clica"
 version = "0.1.0"

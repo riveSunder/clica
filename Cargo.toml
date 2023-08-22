@@ -1,5 +1,5 @@
 [package]
-name = "naive_eca"
+name = "clica"
 version = "0.1.0"
 edition = "2021"
 
